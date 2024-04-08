@@ -1239,37 +1239,49 @@ ORDER BY location_info; -- 4 linii
 
 --==============================================================CAP 6.: Reporting Aggregated Data Using the Group Functions:
 --Definition of Group Functions:
-SELECT count (*), department_id
+SELECT count (*) as "Numar angajati filtrati", department_id 
 FROM employees
 GROUP BY department_id
 ORDER BY department_id; -- 12 linii
 
+--Types and Syntax of Group Functions:
+SELECT COUNT(*) AS total_employees
+FROM employees; -- 97 angajati totali
+
+SELECT COUNT(DISTINCT department_id) AS distinct_departments
+FROM employees; -- 11
+
+SELECT COUNT(salary) AS total_salaries
+FROM employees; -- 97 salarii
+
 -- The COUNT Function:
-SELECT count(*) FROM employees; -- 107
-SELECT count(commission_pct) FROM employees; -- 35
+SELECT count(*) FROM employees; -- 97 angajati
+SELECT count(commission_pct) FROM employees; -- 31
 SELECT count(DISTINCT commission_pct) FROM employees; -- 7
-SELECT count(hire_date), count(manager_id) FROM employees; -- hire_date: 107; manager_id: 106
+SELECT count(hire_date), count(manager_id) FROM employees; -- hire_date: 97; manager_id: 96
 
 select count(*) as total, count(Distinct nvl(department_id,0)), count(DISTINCT job_id)
-from employees; -- 107 ; 12 ; 19
+from employees; -- 97 ; 11 ; 19
 
 -- The SUM Function:
-SELECT sum(2) FROM employees; -- 214
-SELECT sum(salary) FROM employees; -- 691416
-SELECT sum(DISTINCT salary) FROM employees; -- 409908
-SELECT sum(commission_pct) FROM employees; -- 7.8
+SELECT sum(2) FROM employees; -- 194
+SELECT sum(salary) FROM employees; -- 970000
+SELECT sum(DISTINCT salary) FROM employees; -- 10000
+SELECT sum(commission_pct) FROM employees; -- 6.7
 
 SELECT sum(to_date('31-DEC-2015', 'DD-MON-YYYY') - hire_date) / 365.25 "Years worked by End 2015"
-FROM employees; -- 1085.034907597535934291581108829568788501
+FROM employees; -- 985.021218343600273785078713210130047912
 
 SELECT sum(hire_date)
 from employees; -- eroare : ORA-00932
 
 -- The AVG Function:
 SELECT avg(2) FROM employees; --2
-SELECT avg(salary) FROM employees; -- 6461.831775700934579439252336448598130841
-SELECT avg(DISTINCT salary) FROM employees; --7067.379310344827586206896551724137931034
-SELECT avg(commission_pct) FROM employees; -- 0.2228571428571428571428571428571428571429
+SELECT avg(salary) FROM employees; -- 10000
+SELECT avg(DISTINCT salary) FROM employees; --10000
+SELECT avg(commission_pct) FROM employees; -- 0.2161290322580645161290322580645161290323
+SELECT AVG(NVL(COMMISSION_PCT,0)) from employees; --0.0690721649484536082474226804123711340206 ; ce e cu null le face 0: NVL(COMMISSION_PCT,0)
+
 
 SELECT last_name, job_id,
 (to_date('31-DEC-2015','DD-MON-YYYY') - hire_date) / 365.25
@@ -1279,18 +1291,18 @@ WHERE job_id = 'IT_PROG'; -- 5 linii
     
 -- The MAX and MIN Functions:
 SELECT min(commission_pct), max(commission_pct) FROM employees; -- min: 0.1 ; max: 0.4
-SELECT min(start_date),max(end_date) FROM job_history; -- start_date: 17-SEP-95 ; end_date: 31-DEC-07
+SELECT min(start_date),max(end_date) FROM job_history; -- start_date: 17-SEP-95 ; end_date: 03-APR-24
 SELECT min(job_id),max(job_id) FROM employees; -- min: AC_ACCOUNT; MAX: ST_MAN
 
 select min(hire_date), min(salary), max(hire_date), max(salary)
 from employees
-where job_id='SA_REP'; -- 30-jan-04; 6100; 21-apr-08; 11500
+where job_id='SA_REP'; -- 30-jan-04; 10000; 21-apr-08; 10000
 
 select last_name, hire_date, salary
 from employees
 where job_id='SA_REP'
-and salary in (6100,11500)
-or hire_date in ('30-jan-2004','21-apr-2008'); -- 4 linii (ne am folosit de datele de mai sus)
+and salary in (10000,10000)
+or hire_date in ('30-jan-2004','21-apr-2008'); -- 25 linii (ne am folosit de datele de mai sus)
 
 --==============================================EX 6.1: Using the Group functions:
 SELECT ROUND(AVG( LENGTH(COUNTRY_NAME))) AVERAGE_COUNTRY_NAME_LENGTH
@@ -1300,7 +1312,7 @@ SELECT COUNT(*) Num_Employees,
 SUM(SALARY) Tot_Salary_Cost,
 MIN(SALARY) Lowest_Salary,
 MAX(SALARY) Maximum_Salary
-FROM EMPLOYEES;
+FROM EMPLOYEES; -- 97; 970000; 10000; 10000
 
 SELECT COUNT(DISTINCT JOB_ID)
 FROM EMPLOYEES; -- 19
@@ -1309,26 +1321,41 @@ FROM EMPLOYEES; -- 19
 select sum(commission_pct), nvl(department_id,0)
 from employees
 where nvl(department_id,0) in (40,80,0)
-group by department_id; -- 3 linii
+group by department_id; -- 2 linii
 
 select avg(sum(commission_pct))
 from employees
 where nvl(department_id,0) in (40, 80,0)
-group by department_id; -- 3.9
+group by department_id; -- 6.7
+
+select sum(commission_pct)
+from employees
+where nvl(department_id,0) in (40, 80,0)
+group by department_id; -- null, 6.7
+
+select department_id, commission_pct, sum(commission_pct) as "Comisioane totale"
+from employees
+where department_id=80
+group by department_id;
+
+select COUNT(SUM(AVG(salary))) as "Test"
+from employees; -- ORA-00935: group function is nested too deeply
+
+ SELECT SUM(AVG(LENGTH(LAST_NAME))) FROM EMPLOYEES GROUP BY DEPARTMENT_ID; -- 65.73225806451612903225806451612903225806
 
 --Unique DEPARTMENT_ID values in the EMPLOYEES table
 select count(distinct nvl(department_id,0))
-from employees; -- 12
+from employees; -- 11
 
 select distinct department_id
 from employees
-order by department_id; -- 12 linii
+order by department_id; -- 11 linii
 
 --The GROUP BY Clause:
 SELECT max(salary), count(*)
 FROM employees
 GROUP BY department_id
-ORDER BY department_id; -- 12 linii
+ORDER BY department_id; -- 11 linii
 
 select end_date, count(*)
 from job_history; -- eroare: not a single-group group function
@@ -1341,13 +1368,13 @@ select to_char(end_date,'yyyy') "Year",
        count(*) "Number of Employees"
 from job_history
 group by to_char(end_date,'yyyy')
-order by count(*) desc; -- 4 linii
+order by count(*) desc; -- 5 linii
 
 --Grouping by Multiple Columns:
 SELECT department_id, sum(commission_pct)
 FROM employees
 WHERE commission_pct IS NOT NULL
-GROUP BY department_id; -- 2 linii
+GROUP BY department_id; -- 80; 6.7
 
 SELECT department_id, job_id, sum(commission_pct)
 FROM employees
@@ -1357,7 +1384,7 @@ GROUP BY department_id, job_id; -- 3 linii
 select department_id, sum(commission_pct)
 from employees
 where commission_pct is not null
-group by department_id; -- 2 linii
+group by department_id; -- 80; 6.7
 
 select department_id, job_id, sum(commission_pct)
 from employees
@@ -1725,6 +1752,59 @@ ORDER BY region_name, country_name; -- 50 linii
 SELECT COUNT(*) FROM EMPLOYEES;
 SELECT COUNT(*) FROM DEPARTMENTS;
 
+-- SINTAXA:
+-- Equijoins
+SELECT *
+FROM Tabela1
+JOIN Tabela2 ON Tabela1.Coloan?1 = Tabela2.Coloan?1;
+
+-- Join natural
+SELECT *
+FROM Tabela1
+JOIN Tabela2 NATURAL JOIN Tabela2;
+
+-- JOIN...USING
+SELECT *
+FROM Tabela1
+JOIN Tabela2 USING (Coloan?1);
+
+-- JOIN...ON
+SELECT *
+FROM Tabela1
+JOIN Tabela2 ON Tabela1.Coloan?1 = Tabela2.Coloan?1;
+
+-- Nonequijoin
+SELECT *
+FROM Tabela1, Tabela2
+WHERE Tabela1.Coloan?1 > Tabela2.Coloan?2;
+
+-- Self-Join
+SELECT *
+FROM Tabela1 T1
+JOIN Tabela1 T2 ON T1.Coloan?1 = T2.Coloan?1;
+
+-- Outer Joins
+-- Left outer join
+SELECT *
+FROM Tabela1
+LEFT OUTER JOIN Tabela2 ON Tabela1.Coloan?1 = Tabela2.Coloan?1;
+
+-- Right outer join
+SELECT *
+FROM Tabela1
+RIGHT OUTER JOIN Tabela2 ON Tabela1.Coloan?1 = Tabela2.Coloan?1;
+
+-- Full outer join
+SELECT *
+FROM Tabela1
+FULL OUTER JOIN Tabela2 ON Tabela1.Coloan?1 = Tabela2.Coloan?1;
+
+-- Cartesian Product
+SELECT *
+FROM Tabela1
+CROSS JOIN Tabela2;
+
+
 --==============================================================CAP 8. - Using Subqueries to Solve Problems:
 
 --=======================================================Ex 8.1- Types of Subqueries:
@@ -1783,7 +1863,7 @@ GROUP BY country_id; -- 3 linii
 
 SELECT (SELECT max(salary) FROM employees) *
 (SELECT max(commission_pct) FROM employees) / 100
-FROM dual; -- 96
+FROM dual; -- 40
 
 --Generate Rows to be Passed to a DML Statement:
 
@@ -1800,6 +1880,8 @@ WHERE department_id is not null); -- 16 linii sterse
 INSERT INTO dates
 SELECT sysdate
 FROM dual; -- ORA-00942: table or view does not exist
+
+
 
 --====================================================EX 8.2 - More Complex Subqueries:
 
